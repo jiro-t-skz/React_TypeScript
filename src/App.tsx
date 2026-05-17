@@ -1,33 +1,45 @@
 import { useState } from "react";
 import "./App.css";
+import type { PokemonProps } from "./interfaces";
+import { Chart } from "./components/Chart";
+import { View } from "./components/View";
 
 const API_URL = 'https://pokeapi.co/api/v2/pokemon/'
 
 function App() {
 
 const [pokemonId, setPokemonId] = useState('');
-const [pokemonData, setPokemonData] = useState(null);
-
+const [pokemonData, setPokemonData] = useState<PokemonProps | null>(null);
+const [error, setError] = useState<string | null>(null)
 const handleFetchPokemon = async() =>{
-const response = await fetch(API_URL + pokemonId)
-const data = await response.json()
-setPokemonData(data)
-console.log('data', data);
+try{
+   const response = await fetch(API_URL + pokemonId)
+   const data = await response.json()
+   setPokemonData(data)
+   setError(null)
+   }catch(err){
+      setError("存在しないポケモンの情報が入力されました。")
+      console.log("err:", err);
+
+   }
 }
 
 return(
-   <>
    <div>
       <h1>ポケモン図鑑</h1>
-      <input type="text" value={pokemonId} onChange={(e) =>setPokemonId(e.target.value)}/>
+      <div className="search">
+      <input className="input" type="text" value={pokemonId} onChange={(e) =>setPokemonId(e.target.value)}/>
       <button type='button' onClick={handleFetchPokemon}>検索</button>
-
-      <div>
-        <h2>{pokemonData?.name}</h2>
       </div>
+      {error && <p>{error}</p>}
+      {pokemonData && (
+      <div className="pokemonView">
+         <View {...pokemonData}/>
+        <Chart {...pokemonData}/>
+      </div>
+      )}
    </div>
-   </>
-);
+)
 }
 
 export default App;
